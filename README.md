@@ -22,9 +22,19 @@ The inference process proceeds in speculative cycles:
 
 1. **Drafting Phase:** The draft model autoregressively generates K candidate tokens based on the current validated prefix.
 1. **Verification Phase:** The target model takes the current validated prefix and the K proposed draft tokens as input. It then executes a single, parallel forward pass to compute the true conditional probabilities for each token in this extended sequence.
-1. Rejection Sampling Phase: For each proposed token x~t+i​ from the draft sequence, a probabilistic acceptance test is performed. This test compares the probability of x~t+i​ under the target model (Pt​(x~t+i​∣context)) against its probability under the draft model (Pd​(x~t+i​∣context)). The token x~t+i​ is accepted if a randomly sampled uniform variable u∼U(0,1) satisfies:\
-   u≤min(1,Pd​(x~t+i​∣x1​,…,xt​,x~t+1​,…,x~t+i−1​)Pt​(x~t+i​∣x1​,…,xt​,x~t+1​,…,x~t+i−1​)​)\
-\
+1. **Rejection Sampling Phase**:  
+   For each proposed token \( \tilde{x}_{t+i} \) from the draft sequence, a probabilistic acceptance test is performed. This test compares the probability of \( \tilde{x}_{t+i} \) under the target model \( P_t(\tilde{x}_{t+i} \mid \text{context}) \) against its probability under the draft model \( P_d(\tilde{x}_{t+i} \mid \text{context}) \).  
+   
+   The token \( \tilde{x}_{t+i} \) is accepted if a randomly sampled uniform variable \( u \sim \mathcal{U}(0,1) \) satisfies:  
+
+   
+
+\[
+   u \leq \min\left(1, \frac{P_t(\tilde{x}_{t+i} \mid x_1, \dots, x_t, \tilde{x}_{t+1}, \dots, \tilde{x}_{t+i-1})}{P_d(\tilde{x}_{t+i} \mid x_1, \dots, x_t, \tilde{x}_{t+1}, \dots, \tilde{x}_{t+i-1})}\right)
+   \]
+
+
+
    If accepted, the token is appended to the validated output sequence. If rejected, the process immediately halts for the current speculative batch. All subsequent proposed tokens in that batch are discarded, and a new token is sampled directly from the target model's conditional distribution at the point of rejection to maintain distributional fidelity. The next speculative cycle then commences from this newly extended validated prefix.
 ### **2.3. Theoretical Guarantee: Output Distribution Preservation**
 A fundamental theoretical advantage of Speculative Decoding is its guarantee that the final generated sequence will have the *exact same probability distribution* as if it were generated autoregressively by the target model alone. This crucial property is ensured by the robust rejection sampling mechanism. Whenever a speculative token is rejected, the system falls back to sampling directly from the target model's true conditional distribution, thereby correcting any potential deviations introduced by the draft model's approximations and maintaining statistical equivalence.
