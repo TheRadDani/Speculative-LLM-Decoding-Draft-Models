@@ -15,7 +15,7 @@ Traditional LLM inference for sequence generation is inherently autoregressive. 
 ### **2.2. Principles of Speculative Decoding**
 Speculative Decoding draws inspiration from speculative execution in computer architecture. It addresses the autoregressive bottleneck by leveraging a two-model system:
 
-- **Draft Model (**Pd​**):** A smaller, computationally more efficient language model. Its primary function is to rapidly propose a sequence of K candidate future tokens (x~t+1​,…,x~t+K​) given the current validated prefix of tokens (x1​,…,xt​). The draft model is typically a distilled or significantly smaller version of the target model, chosen for its speed.
+- **Draft Model (**Pd​**):** A smaller, computationally more efficient language model. Its primary function is to rapidly propose a sequence of \( K \) candidate future tokens \( (\tilde{x}_{t+1}, \dots, \tilde{x}_{t+K}) \) given the current validated prefix of tokens (x1​,…,xt​). The draft model is typically a distilled or significantly smaller version of the target model, chosen for its speed.
 - **Target Model (**Pt​**):** The large, high-quality LLM whose generative capabilities and output distribution are to be preserved. Instead of generating tokens sequentially, the target model performs a *single* batched forward pass over the entire current validated prefix combined with the K proposed draft tokens. This parallel evaluation yields the true conditional probabilities for all these tokens according to the target model.
 
 The inference process proceeds in speculative cycles:
